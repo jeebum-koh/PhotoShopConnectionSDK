@@ -1,0 +1,38 @@
+﻿/* MBC, the number one terrestrial broadcast station in Korea (Republic of) ***
+ * 
+ * History
+ * ----------------------------------------------------------------------------
+ *   2014.06.24, JeeBum Koh, Initial release
+ *   
+ * 
+ ******************************************************************************/
+
+If you are examining this library, 
+the path to follow is like this:
+
+1. Start first with Utility.cs
+   in Utility.cs, DerivePBKDF2Key function is the key point of PBKDF2 key gen.
+   remember PhotoShop's PBKDF2 algorithm requires using only visible ASCII code,
+   just stating in IsPhotoShopAcceptableString function.
+
+2. Take a glance at Constants.cs
+   there're constants what PhotoShop strictly requires.
+
+3. EncryptDecrypt.cs
+   "DESede/CBC/PKCS5Padding"(what PhotoShop uses) implementation resides.
+
+4. IOHandler.cs / IOHandler.d01.Helper.cs
+   main functionality about communication with PhotoShop resides here.
+
+5. IOHandler.d02.BasicOperation.cs
+   basic javascript execution resides here
+
+6. IOHandler.d03.PhotoShopNotification.cs
+   PhotoShop notification handling implementation resides here.
+
+7. IOHandler.d04.PhotoShopAppAction.cs
+   Pragmatic action's implementation resides here
+
+8. javascript snippets worthy to read reside in JavascriptSnippet.cs
+
+Have Fun!

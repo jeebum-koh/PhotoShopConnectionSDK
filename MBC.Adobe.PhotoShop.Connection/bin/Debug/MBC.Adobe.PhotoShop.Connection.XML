@@ -1,0 +1,1381 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MBC.Adobe.PhotoShop.Connection</name>
+    </assembly>
+    <members>
+        <member name="T:MBC.Adobe.PhotoShop.Connection.PhotoShopConstants">
+            <summary>
+            collection of photoshop constants
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopConstants.SALT">
+            <summary>
+            salt value used in PBKDF2 key generation. 
+            this must match the value used in Photoshop, DO NOT CHANGE
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopConstants.ITERATION_COUNT">
+            <summary>
+            iteration count value used in PBKDF2 key generation. 
+            this must match the value used in Photoshop, DO NOT CHANGE
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopConstants.KEY_LENGTH">
+            <summary>
+            key length(bytes) value used in PBKDF2 key generation. 
+            this must match the value used in Photoshop, DO NOT CHANGE
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopConstants.NO_COMM_ERROR">
+            <summary>
+            Communication Status Def, NON-Error = 0, otherwise error.
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopConstants.PROTOCOL_VERSION">
+            <summary>
+            current protocol version
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopConstants.PROTOCOL_LENGTH">
+            <summary>
+            length of the header not including 
+            the actual length byte or the communication status
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopConstants.COMM_LENGTH">
+            <summary>
+            length of communication status field
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopConstants.COMMUNICATION_PORT">
+            <summary>
+            predefined communication port for PhotoShop communication
+            </summary>
+        </member>
+        <member name="T:MBC.Adobe.PhotoShop.Connection.Constants">
+            <summary>
+            collection of constants used in this library
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.Constants.LOCAL_PORT_DEFAULT">
+            <summary>
+            default local port for constructing SOCKET.
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.Constants.IMG_WIDTH">
+            <summary>
+            default image width for PS communication
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.Constants.IMG_HEIGHT">
+            <summary>
+            default image height for PS communication
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.Constants.INITIAL_TRANSACTION_ID">
+            <summary>
+            we're planning to use initial transaction id like this.
+            </summary>
+        </member>
+        <member name="T:MBC.Adobe.PhotoShop.Connection.ContentType">
+            <summary>
+            values for content type
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.ContentType.ILLEGAL">
+            <summary>
+            not supported illegal content type
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.ContentType.ERRORSTRING">
+            <summary>
+            error string type, PS generated
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.ContentType.JAVASCRIPT">
+            <summary>
+            javascript content type
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.ContentType.IMAGE">
+            <summary>
+            image content type
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.ContentType.PROFILE">
+            <summary>
+            profile content type, not implemented on PhotoShop side
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.ContentType.DATA">
+            <summary>
+            data content type
+            </summary>
+        </member>
+        <member name="T:MBC.Adobe.PhotoShop.Connection.DataBlock">
+            <summary>
+            Photoshop communication protocol definition 
+            +-------------+---------+----------------------+
+            | Unencrypted | 4 bytes | Length of messages   |   
+            |             | 4 bytes | Communication Status |
+            +-------------+---------+----------------------+
+            | Encrypted   | 4 bytes | Protocol Version     |
+            |             | 4 bytes | Transaction ID       |
+            |             | 4 bytes | Content Type         |
+            |             | n bytes | Content              |
+            +-------------+---------+----------------------+
+            ** NOTE : 
+            Byte-order should be Big-Endian, for every 4 bytes integer value.
+            ConnectionSDK Java sample doesn't explicitly express this, 
+            but Java DataOutputStream assumes Big-Endian and
+            constructing Protocol Version, Transaction ID, Content Type shows
+            explicitly byte-order change in Java Sample.
+            
+            This structure covers Encrypted part of protocol
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.DataBlock.ProtocolVersion">
+            <summary>
+            Protocol Version
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.DataBlock.TransactionID">
+            <summary>
+            Transaction ID
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.DataBlock.ContentType">
+            <summary>
+            Content Type
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.DataBlock.Content">
+            <summary>
+            Raw byte array for Content
+            </summary>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.DataBlock.CreateNonErrorDataBlock(MBC.Adobe.PhotoShop.Connection.EncryptDecrypt,System.Byte[])">
+            <summary>
+            create new <see cref="T:MBC.Adobe.PhotoShop.Connection.DataBlock"/> from given encrypted byte array
+            </summary>
+            <param name="decryptor">
+            used for descryption of given encrypted byte array</param>
+            <param name="encryptedBytes">
+            encrypted byte array to decrypt</param>
+            <returns>
+            new <see cref="T:MBC.Adobe.PhotoShop.Connection.DataBlock"/> from given encrypted byte array
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            thrown when given "decryptor" parameter is null
+            </exception>
+            <exception cref="T:System.ArgumentNullException">
+            thrown when given "encryptedBytes" parameter is null
+            </exception>
+            <exception cref="T:System.ArgumentOutOfRangeException">
+            thrown when given "encryptedBytes" parameter is shorter than 
+            <seealso cref="F:MBC.Adobe.PhotoShop.Connection.PhotoShopConstants.PROTOCOL_LENGTH"/>
+            </exception>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.DataBlock.CreateErrorDataBlock(System.Byte[])">
+            <summary>
+            create new <see cref="T:MBC.Adobe.PhotoShop.Connection.DataBlock"/> from given error byte array, 
+            ie plain byte array
+            </summary>
+            <param name="errorBytes">byte array containing raw data.</param>
+            <returns>
+            new <see cref="T:MBC.Adobe.PhotoShop.Connection.DataBlock"/> from given error byte array
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            thrown when given "errorBytes" parameter is null
+            </exception>
+            <exception cref="T:System.ArgumentOutOfRangeException">
+            thrown when given "errorBytes" parameter is shorter than 
+            <seealso cref="F:MBC.Adobe.PhotoShop.Connection.PhotoShopConstants.PROTOCOL_LENGTH"/>
+            </exception>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.DataBlock.GetPlainBuffer">
+            <summary>
+            generate byte array from current object's fields's values.
+            </summary>
+            <returns>
+            byte array representation of current object, not encrypted.
+            </returns>
+            <exception cref="T:System.IO.InvalidDataException">
+            thrown when <see cref="F:MBC.Adobe.PhotoShop.Connection.DataBlock.ContentType"/> is 
+            <see cref="F:MBC.Adobe.PhotoShop.Connection.ContentType.ILLEGAL"/>
+            </exception>
+            <exception cref="T:System.IO.InvalidDataException">
+            thrown when <see cref="F:MBC.Adobe.PhotoShop.Connection.DataBlock.Content"/> is null or shorter than 
+            <seealso cref="F:MBC.Adobe.PhotoShop.Connection.PhotoShopConstants.PROTOCOL_LENGTH"/>
+            </exception>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.DataBlock.GetEncryptedBuffer(MBC.Adobe.PhotoShop.Connection.EncryptDecrypt)">
+            <summary>
+            generate encrypted byte array from current object's fields's values.
+            </summary>
+            <param name="encryptor">used for enscryption</param>
+            <returns>
+            encrypted byte array representation of current object
+            </returns>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.DataBlock.GetContentString">
+            <summary>
+            generate string representation of 
+            current object's <see cref="F:MBC.Adobe.PhotoShop.Connection.DataBlock.Content"/>
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.DataBlock.ToString">
+            <summary>
+            override to <seealso cref="M:System.Object.ToString"/>
+            </summary>
+            <returns>string representation of current object</returns>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.DataBlock.ToString(System.Boolean)">
+            <summary>
+            ToString variant, user can control to display byte representation or not.
+            </summary>
+            <param name="includeByteRepresentation">
+            true, to include byte representation, false, not
+            </param>
+            <returns>
+            string representation of current object
+            </returns>
+        </member>
+        <member name="T:MBC.Adobe.PhotoShop.Connection.EncryptDecrypt">
+            <summary>
+            provides Triple DES algorithm. "DESede/CBC/PKCS5Padding" with PBKDF2 key
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.EncryptDecrypt._encryptor">
+            <summary>
+            provides encryption
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.EncryptDecrypt._decryptor">
+            <summary>
+            provides decryption
+            </summary>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.EncryptDecrypt.#ctor(System.String)">
+            <summary>
+            EncryptDecrypt constructor
+            </summary>
+            <param name="password">used with PBKDF2 key</param>
+            <exception cref="T:System.ArgumentOutOfRangeException">
+            thrown when password argument contains characters 
+            except ascii visible characters ([\x20-\x7E]) 
+            </exception>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.EncryptDecrypt.Encrypt(System.Byte[])">
+            <summary>
+            provides encryption of given byte array
+            </summary>
+            <param name="plainBytes">plain byte array to encrypt</param>
+            <returns>encrypted byte array</returns>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.EncryptDecrypt.Decrypt(System.Byte[])">
+            <summary>
+            provides decryption of given encrypted byte array
+            </summary>
+            <param name="encodedBytes">encrypted byte array to decrypt</param>
+            <returns>decrypted plain byte array</returns>
+        </member>
+        <member name="T:MBC.Adobe.PhotoShop.Connection.IOHandler">
+            <summary>
+            Basic class handling Network Socket IO from/to PhotoShop
+            </summary>
+        </member>
+        <member name="T:MBC.Adobe.PhotoShop.Connection.PhotoShopAppAction">
+            <summary>
+            interface to action available in PhotoShop
+            </summary>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.PhotoShopAppAction.OpenFile(System.String)">
+            <summary>
+            instruct PhotoShop to open given file
+            </summary>
+            <param name="fileName">file path which PhotoShop can understand.</param>
+            <returns>true, if sucess, otherwise false</returns>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.PhotoShopAppAction.SaveActiveDocumentAs(System.String)">
+            <summary>
+            save current active document as given path
+            </summary>
+            <param name="fileName"> file path which PhotoShop can understand.</param>
+            <returns>true, if sucess, otherwise false</returns>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.PhotoShopAppAction.LoadRemoteImage(System.String)">
+            <summary>
+            send image to PS as JPEG format.
+            if given file has image format other than JPEG,
+            it's converted to JPEG and then transmitted to PS.
+            (I gave up with generating PIXMAP you PS...)
+            if given file is not of graphic format, do nothing.
+            </summary>
+            <param name="remoteImageFileName">graphic file to send to PS</param>
+            <returns>true, successfully sent to PS, otherwise false</returns>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.PhotoShopAppAction.LoadRemoteData(System.String)">
+            <summary>
+            send binary data from existing file onto PhotoShop
+            </summary>
+            <param name="remoteFileName">
+            file which should be passed onto PhotoShop.
+            given file resides on client PC(like this) not on host pc of PhotoShop
+            </param>
+            <returns>
+            if success, file path which PS returned. 
+            This file path is in Windows-style file path on Windows client.
+            otherwise empty string
+            </returns>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.PhotoShopAppAction.LoadRemoteData(System.IO.Stream)">
+            <summary>
+            send binary data from given stream object onto PhotoShop
+            </summary>
+            <param name="remoteStream">
+            stream containing binary data which should be passed onto PhotoShop
+            </param>
+            <returns>
+            if success, file path which PS returned.
+            This file path is in Windows-style file path.
+            otherwise empty string
+            </returns>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.PhotoShopAppAction.GetCurrentThumbnail(System.Int32,System.Int32)">
+            <summary>
+            receive current active document's image from PS as JPEG format.
+            if there's no active document, null image is returned.
+            </summary>
+            <param name="width">desired image width</param>
+            <param name="height">desired image height</param>
+            <returns>
+            image object as jpeg format.
+            if there's no image in PS, or error occurred, null reference is returned.
+            </returns>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.PhotoShopAppAction.SaveActiveDocumentToRemote(System.String)">
+            <summary>
+            retrieve active document in PhotoShop onto client pc
+            </summary>
+            <param name="remoteFileName">
+            file name to save PhotoShop's active document.
+            should be valid windows path on client pc.
+            </param>
+            <returns>
+            true, if successful in saving active document in PhotoShop to given file path on client pc.
+            false, otherwise
+            </returns>
+        </member>
+        <member name="P:MBC.Adobe.PhotoShop.Connection.PhotoShopAppAction.ForegroundColor">
+            <summary>
+            get/set ForegroundColor of PhotoShop Connected.
+            if invoken on disposed object, ObjectDisposedException is raised.
+            when get, Color.Empty is returned when any error happens.
+            </summary>
+        </member>
+        <member name="P:MBC.Adobe.PhotoShop.Connection.PhotoShopAppAction.BackgroundColor">
+            <summary>
+            get/set BackgroundColor of PhotoShop Connected.
+            if invoken on disposed object, ObjectDisposedException is raised.
+            when get, Color.Empty is returned when any error happens.
+            </summary>
+        </member>
+        <member name="P:MBC.Adobe.PhotoShop.Connection.PhotoShopAppAction.AllDocumentNames">
+            <summary>
+            get all documents's names opened in PhotoShop.
+            null, when PhotoShop is not working, there's no document opened, etc
+            </summary>
+        </member>
+        <member name="P:MBC.Adobe.PhotoShop.Connection.PhotoShopAppAction.ActiveDocumentName">
+            <summary>
+            get active document's name opened in PhotoShop.
+            string.Empty, when PhotoShop is not working, there's no document opened, etc
+            </summary>
+        </member>
+        <member name="P:MBC.Adobe.PhotoShop.Connection.PhotoShopAppAction.ActiveDocumentID">
+            <summary>
+            get active document's id opened in PhotoShop.
+            -1, when PhotoShop is not working, there's no document opened, etc
+            </summary>
+        </member>
+        <member name="P:MBC.Adobe.PhotoShop.Connection.PhotoShopAppAction.ActiveToolID">
+            <summary>
+            get/set active tool id in PhotoShop
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.IOHandler._netStream">
+            <summary>
+            Network IO Stream (TCP) for communication with PhotoShop.
+            Also this object is used for locking 
+            between command sending operations to PhotoShop 
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.IOHandler._encryptDecrypt">
+            <summary>
+            <see cref="T:MBC.Adobe.PhotoShop.Connection.EncryptDecrypt"/> for encryption/decryption 
+            required from PhotoShop
+            </summary>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.#ctor">
+            <summary>
+            direct instanciation of this default constructor is prohibited.
+            </summary>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.#ctor(MBC.Adobe.PhotoShop.Connection.EncryptDecrypt,System.Net.Sockets.NetworkStream)">
+            <summary>
+            constructor with params.
+            actual object should be passed.
+            </summary>
+            <param name="encryptdecrypt">
+            used for encrypt/decrypt. 
+            should be valid object.
+            </param>
+            <param name="netStream">
+            used for network communication.
+            should be valid object AND connected to host.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+            thrown when <paramref name="encryptdecrypt"/> is null
+            </exception>
+            <exception cref="T:System.ArgumentNullException">
+            thrown when <paramref name="netStream"/> is null
+            </exception>
+            <exception cref="T:System.ArgumentException">
+            thrown when <paramref name="netStream"/> is not connected
+            </exception>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.Finalize">
+            <summary>
+            Destructor
+            </summary>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.Dispose">
+            <summary>
+            Default implementation of <seealso cref="M:System.IDisposable.Dispose"/>
+            </summary>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.Dispose(System.Boolean)">
+            <summary>
+            Canonical implementation of IDisposable pattern.
+            </summary>
+            <param name="disposing">
+            indicator whether this function is invoked 
+            from normal <seealso cref="M:System.IDisposable.Dispose"/> context 
+            or destructor context</param>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.CreateNew(System.String,System.String,System.IO.TextWriter,System.Int32)">
+            <summary>
+            create new <see cref="T:MBC.Adobe.PhotoShop.Connection.IOHandler"/> object from given parameters.
+            </summary>
+            <param name="password">password used with encrypt/decrypt</param>
+            <param name="hostName">communication target</param>
+            <param name="writer">
+            as run logger, 
+            Actually, 
+            <seealso cref="M:System.IO.TextWriter.WriteLine(System.String)"/> is the only function used.
+            </param>
+            <param name="localPort">
+            local host port, when establishing communication socket
+            </param>
+            <returns>
+            newly created <see cref="T:MBC.Adobe.PhotoShop.Connection.IOHandler"/> object 
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            thrown when <paramref name="password"/> is null or empty
+            </exception>
+            <exception cref="T:System.ArgumentOutOfRangeException">
+            thrown when password argument contains characters 
+            except ascii visible characters ([\x20-\x7E]) 
+            </exception>
+            <exception cref="T:System.ArgumentNullException">
+            thrown when <paramref name="hostName"/> is null or empty
+            </exception>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.writeAsRunLog(System.String,System.Byte[])">
+            <summary>
+            writes as run log
+            </summary>
+            <param name="runLog">log message</param>
+            <param name="byteArray">
+            byte array to display, if any
+            </param>
+            <exception cref="T:System.ObjectDisposedException">
+            thrown when invoked on disposed object.
+            </exception>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.writeAsRunLog(System.String,MBC.Adobe.PhotoShop.Connection.DataBlock)">
+            <summary>
+            writes as run log
+            </summary>
+            <param name="runLog">log message</param>
+            <param name="toPrint">log data if any</param>
+            <exception cref="T:System.ObjectDisposedException">
+            thrown when invoked on disposed object.
+            </exception>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.sendDataBlock(MBC.Adobe.PhotoShop.Connection.DataBlock)">
+            <summary>
+            inner operation for sending data to PS.
+            In this context, locking is handled upward(in calling context),
+            so we don't care about synchronization here.
+            </summary>
+            <param name="toSend">data to be sent to PS</param>
+            <returns>
+            true, when sending operation succeeded, so we can proceed forward.
+            else communication error arised, so we should stop proceeding.
+            </returns>
+            <exception cref="T:System.ObjectDisposedException">
+            thrown when invoking on disposed object
+            </exception>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.receivePhotoResponse">
+            <summary>
+            get data from PS
+            In this context, locking is handled upward(in calling context),
+            so we don't care about synchronization here.
+            Also in this context, checking availability of receving data 
+            is handled upward(in calling context).
+            </summary>
+            <returns>
+            data received from PS or error indicator
+            </returns>
+            <exception cref="T:System.ObjectDisposedException">
+            thrown when invoking on disposed object
+            </exception>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.constructPhotoShopResponse(System.Int32,System.Byte[])">
+            <summary>
+            construct new <see cref="T:MBC.Adobe.PhotoShop.Connection.PhotoShopResponse"/> from given parameters.
+            </summary>
+            <param name="commStatus">
+            communication status returned from PhotoShop
+            </param>
+            <param name="replyBytes">
+            byte array returned from PhotoShop
+            </param>
+            <returns>
+            new <see cref="T:MBC.Adobe.PhotoShop.Connection.PhotoShopResponse"/> from given parameters.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            thrown when <paramref name="replyBytes"/> is null
+            </exception>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.getPhotoShopResponseUntil(System.Int32)">
+            <summary>
+            get desired <see cref="T:MBC.Adobe.PhotoShop.Connection.PhotoShopResponse"/> with given transaction id.
+            based on blockIO parameter, it operates only peeking or holding.
+            </summary>
+            <param name="desiredTransactionID">
+            transaction id which context waits.
+            </param>
+            <returns>
+            <see cref="T:MBC.Adobe.PhotoShop.Connection.PhotoShopResponse"/> with desired transaction id.
+            calling thread is blocked until desired transaction id is received
+            if there's no such response, 
+            <see cref="T:MBC.Adobe.PhotoShop.Connection.PhotoShopResponse"/> with <see cref="F:MBC.Adobe.PhotoShop.Connection.CommunicationStatus.NO_DATA"/>
+            is returned.
+            </returns>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.SendAndReceive(MBC.Adobe.PhotoShop.Connection.DataBlock)">
+            <summary>
+            base function for communication with PhotoShop
+            </summary>
+            <param name="toSend">
+            <see cref="T:MBC.Adobe.PhotoShop.Connection.DataBlock"/> containing data to pass to PhotoShop</param>
+            <returns>PhotoShop Response w.r.t <paramref name="toSend"/></returns>
+            <exception cref="T:System.ObjectDisposedException">
+            thrown when invoking on disposed object
+            </exception>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.ProcessJavaScript(System.String)">
+            <summary>
+            send javascript code to PS and returns response from PS
+            </summary>
+            <param name="javaScript">javascript code snippet 
+            to be passed to PS</param>
+            <returns>response from PS</returns>
+            <exception cref="T:System.ObjectDisposedException">
+            thrown when invoked on disposed object.
+            </exception>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.MBC#Adobe#PhotoShop#Connection#PhotoShopAppAction#OpenFile(System.String)">
+            <summary>
+            instruct PhotoShop to open given file
+            </summary>
+            <param name="fileName">
+            file path which PhotoShop can understand.
+            </param>
+            <returns>
+            true, if sucess, otherwise false
+            </returns>
+            <exception cref="T:System.ObjectDisposedException">
+            thrown when invoked on disposed object.
+            </exception>
+            <exception cref="T:System.ArgumentNullException">
+            thrown when given <paramref name="fileName"/> is null or empty
+            </exception>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.MBC#Adobe#PhotoShop#Connection#PhotoShopAppAction#SaveActiveDocumentAs(System.String)">
+            <summary>
+            save current active document as given path
+            </summary>
+            <param name="fileName"> file path which PhotoShop can understand.</param>
+            <returns>true, if sucess, otherwise false</returns>
+            <exception cref="T:System.ObjectDisposedException">
+            thrown when invoked on disposed object.
+            </exception>
+            <exception cref="T:System.ArgumentNullException">
+            thrown when given <paramref name="fileName"/> is null or empty
+            </exception>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.MBC#Adobe#PhotoShop#Connection#PhotoShopAppAction#LoadRemoteImage(System.String)">
+            <summary>
+            send image to PS as JPEG format.
+            if given file has image format other than JPEG,
+            it's converted to JPEG and then transmitted to PS.
+            (I gave up with generating PIXMAP you PS...)
+            if given file is not of graphic format, do nothing.
+            </summary>
+            <param name="remoteImageFileName">graphic file to send to PS</param>
+            <returns>true, successfully sent to PS, otherwise false</returns>
+            <exception cref="T:System.ObjectDisposedException">
+            thrown when invoked on disposed object.
+            </exception>
+            <exception cref="T:System.ArgumentNullException">
+            thrown when <paramref name="remoteImageFileName"/> is null or empty
+            </exception>
+            <exception cref="T:System.ArgumentException">
+            thrown when given file doesn't exist
+            </exception>
+            <exception cref="T:System.ArgumentException">
+            thrown when given file is not of graphic format
+            </exception>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.MBC#Adobe#PhotoShop#Connection#PhotoShopAppAction#LoadRemoteData(System.String)">
+            <summary>
+            send binary data from existing file onto PhotoShop
+            </summary>
+            <param name="remoteFileName">
+            file which should be passed onto PhotoShop.
+            given file resides on client PC(like this) not on host pc of PhotoShop
+            </param>
+            <returns>
+            if success, file path which PS returned. 
+            This file path is in Windows-style file path on Windows client.
+            otherwise empty string
+            </returns>
+            <exception cref="T:System.ObjectDisposedException">
+            thrown when invoked on disposed object.
+            </exception>
+            <exception cref="T:System.ArgumentException">
+            thrown when given file doesn't exist, or when file-length is zero
+            </exception>
+            <exception cref="T:System.ArgumentNullException">
+            <paramref name="remoteFileName"/> is null or empty
+            </exception>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.MBC#Adobe#PhotoShop#Connection#PhotoShopAppAction#LoadRemoteData(System.IO.Stream)">
+            <summary>
+            send binary data from given stream object onto PhotoShop
+            </summary>
+            <param name="remoteStream">
+            stream containing binary data which should be passed onto PhotoShop
+            </param>
+            <returns>
+            if success, file path which PS returned.
+            This file path is in Windows-style file path.
+            otherwise empty string
+            </returns>
+            <exception cref="T:System.ObjectDisposedException">
+            thrown when invoked on disposed object.
+            </exception>
+            <exception cref="T:System.ArgumentNullException">
+            thrown when <paramref name="remoteStream"/> is null
+            </exception>
+            <exception cref="T:System.ArgumentException">
+            thrown when <paramref name="remoteStream"/> doesn't provide reading
+            </exception>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.MBC#Adobe#PhotoShop#Connection#PhotoShopAppAction#GetCurrentThumbnail(System.Int32,System.Int32)">
+            <summary>
+            receive current active document's image from PS as JPEG format.
+            if there's no active document, null image is returned.
+            </summary>
+            <param name="width">desired image width</param>
+            <param name="height">desired image height</param>
+            <returns>
+            image object as jpeg format.
+            if there's no image in PS, or error occurred, null reference is returned.
+            </returns>
+            <exception cref="T:System.ObjectDisposedException">
+            thrown when invoked on disposed object.
+            </exception>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.MBC#Adobe#PhotoShop#Connection#PhotoShopAppAction#SaveActiveDocumentToRemote(System.String)">
+            <summary>
+            not implemented
+            </summary>
+            <param name="remoteFileName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.queueCheckNotification">
+            <summary>
+            queue <see cref="M:MBC.Adobe.PhotoShop.Connection.IOHandler.checkNotification(System.Object)"/> into ThreadPool.
+            If disposed, no more queue up.
+            </summary>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.checkNotification(System.Object)">
+            <summary>
+            check communication socket to see there's notification pending 
+            </summary>
+            <param name="obj">NO USE</param>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.processNotification(MBC.Adobe.PhotoShop.Connection.PhotoShopResponse)">
+            <summary>
+            change notification from PhotoShop is sent with transaction id,
+            which is the transaction id when subscribing given event.
+            Let's say, we subscribe foregroundColorChanged with transaction id 123,
+            and toolChanged with transaction id 567.
+            Then PhotoShop sends us foregroundColorChanged with transaction id 123,
+            and toolChanged with transaction id 567 respectively.
+            </summary>
+            <param name="response">
+            <see cref="T:MBC.Adobe.PhotoShop.Connection.PhotoShopResponse"/> to handle.
+            </param>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.generateEventSubscriptionJavascript(System.Collections.Generic.HashSet{MBC.Adobe.PhotoShop.Connection.PhotoShopNotification})">
+            <summary>
+            generate event subscription javascript.
+            </summary>
+            <param name="eventSet">
+            collection of event-type to subscribe.
+            </param>
+            <returns>
+            newly generated javascript snippet.
+            </returns>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.IOHandler._notificationSubscribed">
+            <summary>
+            variable indicating whether event subscription and 
+            queueing up <see cref="M:MBC.Adobe.PhotoShop.Connection.IOHandler.queueCheckNotification"/> was invoked.
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.IOHandler._notificationSubscribedTransactionID">
+            <summary>
+            records the transaction id which passed to PhotoShop when notification subscribing.
+            </summary>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.subscribeEvent(System.Collections.Generic.HashSet{MBC.Adobe.PhotoShop.Connection.PhotoShopNotification})">
+            <summary>
+            subscribe change notification to PhotoShop
+            </summary>
+            <param name="eventSet">
+            collection of event-type to subscribe.
+            </param>
+            <returns>
+            true, if subscription was successful.
+            false otherwise
+            </returns>
+            <exception cref="T:System.ObjectDisposedException">
+            thrown when invoked on disposed object.
+            </exception>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.IOHandler.subscribeEvent(MBC.Adobe.PhotoShop.Connection.PhotoShopNotification)">
+            <summary>
+            subscribe change notification to PhotoShop
+            </summary>
+            <param name="evt">event-type to subscribe.</param>
+            <returns>
+            true, if subscription was successful.
+            false otherwise
+            </returns>
+            <exception cref="T:System.ObjectDisposedException">
+            thrown when invoked on disposed object.
+            </exception>
+        </member>
+        <member name="P:MBC.Adobe.PhotoShop.Connection.IOHandler.TransactionID">
+            <summary>
+            Transaction ID, when communication is made, 
+            this value is automatically incremented.
+            </summary>
+        </member>
+        <member name="P:MBC.Adobe.PhotoShop.Connection.IOHandler.AsRunLogger">
+            <summary>
+            used for As Run Log printing.
+            Actually, 
+            <seealso cref="M:System.IO.TextWriter.WriteLine(System.String)"/> is the only function used.
+            </summary>
+        </member>
+        <member name="P:MBC.Adobe.PhotoShop.Connection.IOHandler.ShowByteDisplayInAsRunLog">
+            <summary>
+            When as run log is written, including byte representation in it.
+            </summary>
+        </member>
+        <member name="P:MBC.Adobe.PhotoShop.Connection.IOHandler.PhotoShopNotificationProc">
+            <summary>
+            Action to invoke when changed notification from PhotoShop received.
+            NOTE: to use this, always mind about Thread Synchronization.
+            Since .Net uses single ui thread to handle ui operation scheme,
+            not-careful-assignment to this field would be result in cross thread violation.
+            <code>
+            var context = SynchronizationContext.Current;
+            _cmdHandler.PhotoShopNotificationProc = 
+                (evtEnum, message) =>
+                {
+                    context.Send(
+                        (obj) =>
+                        {
+                            switch (evtEnum)
+                            {
+                                case PhotoShopNotification.INVALID_NOTIFICATION:
+                                    break;
+                                case PhotoShopNotification.foregroundColorChanged:
+                                    pbForeground.BackColor = message.convertToColor();
+                                    break;
+                                default:
+                                    break;
+                            }
+                        },
+                        NULL);
+                 };
+            </code>
+            </summary>
+        </member>
+        <member name="P:MBC.Adobe.PhotoShop.Connection.IOHandler.App">
+            <summary>
+            gets explicit interface implementation from this object
+            </summary>
+        </member>
+        <member name="P:MBC.Adobe.PhotoShop.Connection.IOHandler.IsDisposed">
+            <summary>
+            check if disposed
+            </summary>
+        </member>
+        <member name="P:MBC.Adobe.PhotoShop.Connection.IOHandler.DataAvailable">
+            <summary>
+            check if underlying socket has data to read.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">
+            thrown when invoking on disposed object
+            </exception>
+        </member>
+        <member name="P:MBC.Adobe.PhotoShop.Connection.IOHandler.IsPhotoShopWorking">
+            <summary>
+            test connectivity to PhotoShop
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">
+            thrown when invoked on disposed object.
+            </exception>
+        </member>
+        <member name="P:MBC.Adobe.PhotoShop.Connection.IOHandler.MBC#Adobe#PhotoShop#Connection#PhotoShopAppAction#ForegroundColor">
+            <summary>
+            get/set ForegroundColor of PhotoShop Connected.
+            if invoken on disposed object, ObjectDisposedException is raised.
+            when get, Color.Empty is returned when any error happens.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">
+            thrown when invoked on disposed object.
+            </exception>
+        </member>
+        <member name="P:MBC.Adobe.PhotoShop.Connection.IOHandler.MBC#Adobe#PhotoShop#Connection#PhotoShopAppAction#BackgroundColor">
+            <summary>
+            get/set BackgroundColor of PhotoShop Connected.
+            if invoken on disposed object, ObjectDisposedException is raised.
+            when get, Color.Empty is returned when any error happens.
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">
+            thrown when invoked on disposed object.
+            </exception>
+        </member>
+        <member name="P:MBC.Adobe.PhotoShop.Connection.IOHandler.MBC#Adobe#PhotoShop#Connection#PhotoShopAppAction#AllDocumentNames">
+            <summary>
+            get all documents's names opened in PhotoShop.
+            null, when PhotoShop is not working, there's no document opened, etc
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">
+            thrown when invoked on disposed object.
+            </exception>
+        </member>
+        <member name="P:MBC.Adobe.PhotoShop.Connection.IOHandler.MBC#Adobe#PhotoShop#Connection#PhotoShopAppAction#ActiveDocumentName">
+            <summary>
+            get active document's name opened in PhotoShop.
+            string.Empty, when PhotoShop is not working, there's no document opened, etc
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">
+            thrown when invoked on disposed object.
+            </exception>
+        </member>
+        <member name="P:MBC.Adobe.PhotoShop.Connection.IOHandler.MBC#Adobe#PhotoShop#Connection#PhotoShopAppAction#ActiveDocumentID">
+            <summary>
+            get active document's id opened in PhotoShop.
+            -1, when PhotoShop is not working, there's no document opened, etc
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">
+            thrown when invoked on disposed object.
+            </exception>
+        </member>
+        <member name="P:MBC.Adobe.PhotoShop.Connection.IOHandler.MBC#Adobe#PhotoShop#Connection#PhotoShopAppAction#ActiveToolID">
+            <summary>
+            get/set active tool id of PhotoShop connected
+            </summary>
+            <exception cref="T:System.ObjectDisposedException">
+            thrown when invoked on disposed object.
+            </exception>
+        </member>
+        <member name="T:MBC.Adobe.PhotoShop.Connection.CommunicationStatus">
+            <summary>
+            Status of Communication with PhotoShop
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.CommunicationStatus.OK">
+            <summary>
+            no error
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.CommunicationStatus.ERROR_COMMUNICATION">
+            <summary>
+            unexpected exception was raised from sending and receiving data
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.CommunicationStatus.ERROR_PS_REPORT">
+            <summary>
+            PhotoShop explicitly reports error
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.CommunicationStatus.NO_DATA">
+            <summary>
+            no data is received from PhotoShop
+            </summary>
+        </member>
+        <member name="T:MBC.Adobe.PhotoShop.Connection.PhotoShopResponse">
+            <summary>
+            encapsulation of Communication with PhotoShop
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopResponse.Status">
+            <summary>
+            Status of Communication with PhotoShop
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopResponse.ResponseBlock">
+            <summary>
+            contains decrypted PhotoShop response 
+            </summary>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.PhotoShopResponse.ToString">
+            <summary>
+            Canonical override to <seealso cref="M:System.Object.ToString"/>
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:MBC.Adobe.PhotoShop.Connection.PhotoShopResponse.ErrorString">
+            <summary>
+            Error string received from PhotoShop
+            </summary>
+        </member>
+        <member name="P:MBC.Adobe.PhotoShop.Connection.PhotoShopResponse.ReturnString">
+            <summary>
+            Return string received from PhotoShop
+            </summary>
+        </member>
+        <member name="T:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet">
+            <summary>
+            collection of javascript snippet
+            </summary>
+        </member>
+        <member name="T:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.PhotoShopApp">
+            <summary>
+            collection of javascript snippets related with app object.
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.PhotoShopApp.GET_VERSION">
+            <summary>
+            version number, to test PS connectivity.
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.PhotoShopApp.ACTION_SUCCESS">
+            <summary>
+            comparison string used to check whether SET action succeeded.
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.PhotoShopApp.GET_DOCUMENTS_LENGTH">
+            <summary>
+            documents length
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.PhotoShopApp.GET_ACTIVE_DOCUMENT_ID">
+            <summary>
+            active document id
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.PhotoShopApp.OPEN_FILE">
+            <summary>
+            load given file onto PS
+            {0} - file path on host pc of PhotoShop
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.PhotoShopApp.SAVE_AS_ACTIVE_DOCUMENT">
+            <summary>
+            save active document as...
+            {0} - file name to be saved as on host pc of PhotoShop
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.PhotoShopApp.GET_THUMBNAIL_IMAGE">
+            <summary>
+            JPEG sucks... no idea to display returned jpeg from PS.
+            turn to use PIXMAP.
+            {0} - document ID, integer
+            {1} - width of thumbnail, integer
+            {2} - height of thumbnail, integer
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.PhotoShopApp.GET_FOREGROUND_COLOR">
+            <summary>
+            get current foreground color of PhotoShop
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.PhotoShopApp.SET_FOREGROUND_COLOR">
+            <summary>
+            set foreground color.
+            {0} - red byte value,
+            {1} - green byte value,
+            {2} - blue byte value,
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.PhotoShopApp.GET_BACKGROUND_COLOR">
+            <summary>
+            get current background color of PhotoShop
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.PhotoShopApp.SET_BACKGROUND_COLOR">
+            <summary>
+            set background color.
+            {0} - red byte value,
+            {1} - green byte value,
+            {2} - blue byte value,
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.PhotoShopApp.GET_ALL_DOCUMENT_NAMES">
+            <summary>
+            get all document names
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.PhotoShopApp.GET_ACTIVE_DOCUMENT_NAME">
+            <summary>
+            get active document name of PhotoShop.
+            if there's no document opened in PhotoShop, null string
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.PhotoShopApp.GET_ACTIVE_TOOL_ID">
+            <summary>
+            get current active tool id in PhotoShop
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.PhotoShopApp.SET_ACTIVE_TOOL_ID">
+            <summary>
+            set active tool.
+            {0} - tool ID
+            </summary>
+        </member>
+        <member name="T:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.PSEvent">
+            <summary>
+            collection of javascript snippet which is involved with event notification.
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.PSEvent.SUBSCRIBE_EVENT_REFERENCE">
+            <summary>
+            reference javascript snippet to subscribe event.
+            {0} - event ID
+            {1} - SUCCESS string to check given script is well executed.
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.PSEvent.SUBSCRIBE_EVENT_HEADER">
+            <summary>
+            used in SUBSCRIBE_EVENT javascript snippet generation
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.PSEvent.SUBSCRIBE_EVENT_BODY">
+            <summary>
+            used in SUBSCRIBE_EVENT javascript snippet generation.
+            {0} - identifier, should be unique
+            {1} - event ID
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.PSEvent.SUBSCRIBE_EVENT_FOOTER">
+            <summary>
+            used in SUBSCRIBE_EVENT javascript snippet generation.
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.PSEvent.SUBSCRIBE_EVENT_SUCCESS">
+            <summary>
+            comparison string used to check whether event subscription is handled well.
+            </summary>
+        </member>
+        <member name="T:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.REFERENCE">
+            <summary>
+            collection of javascript snippets worth to check
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.REFERENCE.GET_DOCUMENT_STREAM_NOT_WORKING">
+            <summary>
+            not working.....
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.REFERENCE.GET_ENV_VAR">
+            <summary>
+            get environmental variable value of host pc of PhotoShop
+            {0} - environmental variable name
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.REFERENCE.FILE_EXISTS">
+            <summary>
+            check given file existence on host pc of PhotoShop
+            {0} - file name to check
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.REFERENCE.FOLDER_EXISTS">
+            <summary>
+            check given folder existence on host pc of PhotoShop
+            {0} - folder name to check
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.REFERENCE.CHANGE_TEXT">
+            <summary>
+            change text of given text layer.
+            {0} - layer name,
+            {1} - text to be changed
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.REFERENCE.CHANGE_INFO_TITLE_ACTIVED_DOCUMENT">
+            <summary>
+            change document file info's title text of active document.
+            {0} - title text to be changed.
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.REFERENCE.CHANGE_INFO_TITLE_OPEN_DOCUMENT_BY_NAME">
+            <summary>
+            change document file info's title text of open document.
+            {0} - document name
+            {1} - title text to be changed.
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.JavascriptSnippet.REFERENCE.CHANGE_INFO_TITLE_OPEN_DOCUMENT_BY_ID">
+            <summary>
+            change document file info's title text of open document.
+            {0} - document id, integer
+            {1} - title text to be changed.
+            </summary>
+        </member>
+        <member name="T:MBC.Adobe.PhotoShop.Connection.PhotoShopNotification">
+            <summary>
+            enumeration for change notification PhotoShop possibly sends
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopNotification.INVALID_NOTIFICATION">
+            <summary>
+            default value for PhotoShopNotification.
+            PhotoShop doesn't send this.
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopNotification.foregroundColorChanged">
+            <summary>
+            fore-ground color changed
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopNotification.backgroundColorChanged">
+            <summary>
+            back-ground color changed
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopNotification.toolChanged">
+            <summary>
+            tool changed
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopNotification.closedDocument">
+            <summary>
+            document closed
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopNotification.newDocumentViewCreated">
+            <summary>
+            new document view created
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopNotification.currentDocumentChanged">
+            <summary>
+            current document changed
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopNotification.activeViewChanged">
+            <summary>
+            active view changed
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopNotification.documentNamesChanged">
+            <summary>
+            document names changed
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopNotification.colorSettingsChanged">
+            <summary>
+            color settings changed
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopNotification.keyboardShortcutsChanged">
+            <summary>
+            keyboard shortcuts changed
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopNotification.preferencesChanged">
+            <summary>
+            preferences changed
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopNotification.quickMaskStateChanged">
+            <summary>
+            quick mask state changed
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopNotification.screenModeChanged">
+            <summary>
+            screen mode changed
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopNotification.gaussianBlur">
+            <summary>
+            gaussianBlur
+            </summary>
+        </member>
+        <member name="T:MBC.Adobe.PhotoShop.Connection.PhotoShopTools">
+            <summary>
+            collection of tool id and name  in PhotoShop
+            </summary>
+        </member>
+        <member name="F:MBC.Adobe.PhotoShop.Connection.PhotoShopTools._toolIDNameDictionary">
+            <summary>
+            memory structure to hold tool id and name  in PhotoShop
+            </summary>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.PhotoShopTools.#cctor">
+            <summary>
+            populate tool id and name pairs
+            </summary>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.PhotoShopTools.isValidToolID(System.String)">
+            <summary>
+            check if given tool id is valid
+            </summary>
+            <param name="toolID">tool id to check</param>
+            <returns>
+            true, if given tool id is in our pre-defined collection.
+            false, otherwise
+            </returns>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.PhotoShopTools.getToolName(System.String)">
+            <summary>
+            get tool name of given tool id
+            </summary>
+            <param name="toolID">tool id to resolve name</param>
+            <returns>
+            tool name if available,
+            else "INVALID TOOL ID"
+            </returns>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.PhotoShopTools.ToolIDs">
+            <summary>
+            tool id collection
+            </summary>
+            <returns>tool id collection</returns>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.PhotoShopTools.ToolNames">
+            <summary>
+            tool name collection
+            </summary>
+            <returns>tool name collection</returns>
+        </member>
+        <member name="T:MBC.Adobe.PhotoShop.Connection.Utility">
+            <summary>
+            Collection of utility functions.
+            </summary>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.Utility.IsPhotoShopPBKDF2AcceptableString(System.String)">
+            <summary>
+            Test given string is PhotoShop acceptable, 
+            ie. composed of ascii visible characters ([\x20-\x7E])
+            </summary>
+            <param name="strTest">string to be tested</param>
+            <returns>PhotoShop acceptable or not</returns>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.Utility.DerivePBKDF2Key(System.String)">
+            <summary>
+            generates RFC2898 PBKDF2 secure key used for PhotoShop Communication
+            </summary>
+            <param name="password">
+            password to encode, 
+            should be composed of ascii visible characters ([\x20-\x7E])
+            </param>
+            <returns>
+            byte array containing generated RFC2898 PBKDF2 secure key.
+            </returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">
+            thrown when password argument contains characters 
+            except ascii visible characters ([\x20-\x7E]) 
+            </exception>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.Utility.GetHexaDisplayString(System.Byte[],System.String)">
+            <summary>
+            Utility function to convert byte array to hexa display format
+            </summary>
+            <param name="data">byte array to convert to string</param>
+            <param name="padding">padding string for formating</param>
+            <returns>
+            hexa display string converted from <paramref name="data"/>
+            </returns>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.Utility.ToPhotoShopPathString(System.String)">
+            <summary>
+            convert file path to PhotoShop acceptable path representation in Windows.
+            </summary>
+            <param name="strPath">path to convert</param>
+            <returns>
+            converted PhotoShop acceptable path representation in Windows.
+            </returns>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.Utility.DecodeArray(System.Byte[])">
+            <summary>
+            decode byte array to bitmap.
+            It's assumed that we request PIXMAP type to PS 
+            to get current thumbnail.
+            So <paramref name="byteArray"/> must be of format PIXMAP.
+            Also, if given param is null or less than expected, 
+            null image is returned.
+            This function doesn't care about Exception!!!
+            Be sure to enclose this function call with exception handling
+            </summary>
+            <param name="byteArray">
+            byte array containing PIXMAP
+            </param>
+            <returns>
+            Image decoded from <paramref name="byteArray"/> 
+            </returns>
+        </member>
+        <member name="M:MBC.Adobe.PhotoShop.Connection.Utility.convertToColor(System.String)">
+            <summary>
+            convert string value to <see cref="T:System.Drawing.Color"/>
+            notice that given string is passed from PhotoShop as of format
+            "RRGGBB" hex values
+            </summary>
+            <param name="toConvert">string to convert to Color</param>
+            <returns>
+            converted color.
+            if given string is not convertable
+            (as such, null string, string is not of format "RRGGBB", etc)
+            then <see cref="F:System.Drawing.Color.Empty"/> is returned.
+            </returns>
+        </member>
+    </members>
+</doc>

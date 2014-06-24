@@ -1,0 +1,9 @@
+D:\Projects\상암뉴스NPS\PS연동\PhotoShopCommandLine\bin\Debug\PhotoShopCommandLine.exe.config
+D:\Projects\상암뉴스NPS\PS연동\PhotoShopCommandLine\bin\Debug\PhotoShopCommandLine.exe
+D:\Projects\상암뉴스NPS\PS연동\PhotoShopCommandLine\bin\Debug\PhotoShopCommandLine.pdb
+D:\Projects\상암뉴스NPS\PS연동\PhotoShopCommandLine\bin\Debug\MBC.Adobe.PhotoShop.Connection.dll
+D:\Projects\상암뉴스NPS\PS연동\PhotoShopCommandLine\bin\Debug\MBC.Adobe.PhotoShop.Connection.pdb
+D:\Projects\상암뉴스NPS\PS연동\PhotoShopCommandLine\obj\Debug\PhotoShopCommandLine.csprojResolveAssemblyReference.cache
+D:\Projects\상암뉴스NPS\PS연동\PhotoShopCommandLine\obj\Debug\PhotoShopCommandLine.exe
+D:\Projects\상암뉴스NPS\PS연동\PhotoShopCommandLine\obj\Debug\PhotoShopCommandLine.pdb
+D:\Projects\상암뉴스NPS\PS연동\PhotoShopCommandLine\bin\Debug\MBC.Adobe.PhotoShop.Connection.xml
