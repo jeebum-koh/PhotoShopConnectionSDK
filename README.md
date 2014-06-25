@@ -4,8 +4,8 @@ PhotoShopConnectionSDK
 C# implementation for Adobe PhotoShop Connection SDK, provided by MBC
 
 PhotoShopConnectionSDK solution is made with Visual Studio 2013 Express,
-and tested with PhotoShop CC(64bit), PhotoShop CC (2014)
-Solution contains 3 projects.
+and tested with PhotoShop CC(64bit), PhotoShop CC (2014). 
+VS Solution contains 3 projects.
 - MBC.Adobe.PhotoShop.Connection :
   (type-class library) 
   contains library implementation basic for Adobe PhotoShop Connection
